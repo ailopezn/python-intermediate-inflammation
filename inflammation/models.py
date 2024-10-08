@@ -8,6 +8,7 @@ and each column represents a single day across all patients.
 """
 
 import numpy as np
+import json
 
 
 def load_csv(filename):  
@@ -32,3 +33,51 @@ def daily_min(data):
     """Calculate the daily min of a 2d inflammation data array."""
     return np.min(data, axis=0)
 
+
+def load_json(filename):
+    """Load a numpy array from a JSON document.
+
+    Expected format:
+    [
+        {
+            observations: [0, 1]
+        },
+        {
+            observations: [0, 2]
+        }
+    ]
+
+    :param filename: Filename of CSV to load
+
+    """
+    with open(filename, 'r', encoding='utf-8') as file:
+        data_as_json = json.load(file)
+        return [np.array(entry['observations']) for entry in data_as_json]
+
+def compute_standard_deviation_by_day(data):
+    """Calculates the standard deviation by day between datasets.
+    """
+    means_by_day = map(daily_mean, data)
+    means_by_day_matrix = np.stack(list(means_by_day))
+
+    daily_standard_deviation = np.std(means_by_day_matrix, axis=0)
+    return daily_standard_deviation
+
+
+def analyse_data(data_source):
+    """Calculates the standard deviation by day between datasets.
+    Gets all the inflammation data from CSV files within a directory, works out the mean
+    inflammation value for each day across all datasets, then visualises the
+    standard deviation of these means on a graph."""
+    # data_file_paths = glob.glob(os.path.join(data_dir, 'inflammation*.csv'))
+    # if len(data_file_paths) == 0:
+    #     raise ValueError(f"No inflammation csv's found in path {data_dir}")
+    # data = map(models.load_csv, data_file_paths)
+    data = data_source.load_inflamation_data()
+    daily_standard_deviation = compute_standard_deviation_by_day(data)
+
+    # graph_data = {
+    #     'standard deviation by day': daily_standard_deviation,
+    # }
+    # views.visualize(graph_data)
+    return daily_standard_deviation
