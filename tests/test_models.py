@@ -1,10 +1,12 @@
 """Tests for statistics functions within the Model layer."""
 
+import os
 import numpy as np
 import numpy.testing as npt
 import pytest
 from unittest.mock import Mock
 import math
+
 
 
 def test_daily_mean_zeros():
@@ -33,6 +35,17 @@ def test_daily_mean_integers():
     npt.assert_array_equal(daily_mean(test_input), test_result)
 
 
+@pytest.mark.parametrize('data, expected_standard_deviation', [
+    ([0, 0, 0], 0.0),
+    ([1.0, 1.0, 1.0], 0),
+    ([0.0, 2.0], 1.0),
+])
+def test_daily_standard_deviation(data, expected_standard_deviation):
+    from inflammation.models import standard_deviation
+    result_data = standard_deviation(data)#['standard deviation']
+    npt.assert_approx_equal(result_data, expected_standard_deviation)
+
+    
 def test_daily_max():
     """Test that max function works for an array of positive integers."""
     from inflammation.models import daily_max
@@ -102,31 +115,37 @@ def test_daily_min(test, expected):
 
 
 @pytest.mark.parametrize(
-    "test, expected",
+    "test, expected, expect_raises",
     [
         (
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+            None,
         ),
         (
             [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
             [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
+            None,
         ),
         (
             [[float('nan'), 1, 1], [1, 1, 1], [1, 1, 1]],
             [[0, 1, 1], [1, 1, 1], [1, 1, 1]],
+            None,
         ),
         (
             [[1, 2, 3], [4, 5, float('nan')], [7, 8, 9]],
             [[0.33, 0.67, 1], [0.8, 1, 0], [0.78, 0.89, 1]],
+            None,
         ),
         (
             [[-1, 2, 3], [4, 5, 6], [7, 8, 9]],
             [[0, 0.67, 1], [0.67, 0.83, 1], [0.78, 0.89, 1]],
+            ValueError,
         ),
         (
             [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
             [[0.33, 0.67, 1], [0.67, 0.83, 1], [0.78, 0.89, 1]],
+            None,
         ),
         (
                 [[-1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -159,3 +178,4 @@ def test_compute_data_mock_source():
                                                      [[0, 1, 0]]]
     result = analyse_data(data_source)
     npt.assert_array_almost_equal(result, [0, math.sqrt(0.25) ,0])
+
