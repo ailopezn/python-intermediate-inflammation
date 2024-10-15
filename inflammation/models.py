@@ -34,7 +34,7 @@ def daily_min(data):
 
 
 def standard_deviation(data):
-    """Computes and returns standard deviation for data."""
+    """Computes and returns an array with the standard deviation for data."""
     mean_of_data = np.mean(data, axis=0)
     devs = []
     for entry in data:
